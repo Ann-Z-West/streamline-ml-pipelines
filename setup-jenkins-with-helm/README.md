@@ -167,7 +167,7 @@ controller:
 contact the Jenkins update site to retrieve them as part of the first boot. A more robust approach 
 is to download the plugins as part of a custom image, which ensures the plugins are baked into the 
 Docker image. It also allows additional tools to be installed on the Jenkins controller.
-More details -> (Customize jenkins docker image)[https://octopus.com/blog/jenkins-helm-install-guide#installing-additional-plugins]
+More details -> [Customize jenkins docker image](https://octopus.com/blog/jenkins-helm-install-guide#installing-additional-plugins)
 
 ## Configure as Code
 

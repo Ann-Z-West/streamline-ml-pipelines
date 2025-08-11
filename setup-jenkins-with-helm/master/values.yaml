@@ -1,0 +1,5 @@
+namespaceOverride:
+  devops
+controller:
+  additionalPlugins:
+    - blueocean:1.27.21

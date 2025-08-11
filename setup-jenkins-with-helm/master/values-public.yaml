@@ -1,0 +1,12 @@
+namespaceOverride:
+  devops
+controller:
+  serviceType: LoadBalancer
+  servicePort: 8080
+  serviceAnnotations: {}
+  service:
+    loadBalancerIP: ""
+  podLabels: {"svc":"jenkins-master"}
+  jenkinsUrl: ${hostname/IP address of your Jenkins instance:8080}
+  additionalPlugins:
+    - blueocean:1.27.21

@@ -1,12 +1,61 @@
 namespaceOverride:
   devops
 controller:
-  serviceType: LoadBalancer
+  serviceType: NodePort
   servicePort: 8080
-  serviceAnnotations: {}
-  service:
-    loadBalancerIP: ""
   podLabels: {"svc":"jenkins-master"}
-  jenkinsUrl: ${hostname/IP address of your Jenkins instance:8080}
   additionalPlugins:
     - blueocean:1.27.21
+  scriptApproval:
+    - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
+    - "new groovy.json.JsonSlurperClassic"
+  ingress:
+    enabled: true
+persistence:
+    enabled: true
+    storageClass: "neosight-sc-dgraph-staging"
+agent:
+  podName: default
+  customJenkinsLabels: default
+  envVars:
+  - name: HOME
+    value: /home/jenkins/agent
+  - name: PATH
+    value: /usr/local/bin
+  resources:
+    limits:
+      cpu: "1"
+      memory: "2048Mi"
+  additionalAgents:
+    python:
+      podName: python
+      customJenkinsLabels: python
+      sideContainerName: python
+      image:
+        repository: python
+        tag: "3"
+      command: "/bin/sh -c"
+      args: "cat"
+      TTYEnabled: true
+  disableDefaultAgent: true
+  podTemplates:
+    python: |
+      - name: python
+        label: jenkins-python
+        serviceAccount: jenkins
+        containers:
+          - name: python
+            image: python:3
+            command: "/bin/sh -c"
+            args: "cat"
+            ttyEnabled: true
+            privileged: true
+            resourceRequestCpu: "400m"
+            resourceRequestMemory: "512Mi"
+            resourceLimitCpu: "1"
+            resourceLimitMemory: "1024Mi"
+  volumes:
+    - type: EmptyDir
+      mountPath: /var/myapp/myemptydir
+      memory: false
+  

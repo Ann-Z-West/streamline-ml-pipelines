@@ -1,13 +1,16 @@
 - [Set up Jenkins using helm](#set-up-jenkins-using-helm)
   - [Prepare](#prepare)
-  - [Deploying Jenkins master instance](#deploying-jenkins-master-instance)
+  - [Deploy Jenkins master instance](#deploy-jenkins-master-instance)
   - [Expose Jenkins to a public IP Address on the Cloud](#expose-jenkins-to-a-public-ip-address-on-the-cloud)
   - [Expose Jenkins as svc on your local minikube](#expose-jenkins-as-svc-on-your-local-minikube)
     - [Proxy broken](#proxy-broken)
   - [Pre-install additional plugins](#pre-install-additional-plugins)
   - [Configure as Code](#configure-as-code)
   - [Back up data volumes](#back-up-data-volumes)
+    - [Option 1 - save it to another directory](#option-1---save-it-to-another-directory)
+    - [Option 2 - save it in persistence volumes](#option-2---save-it-in-persistence-volumes)
   - [Add agents](#add-agents)
+  - [Use agent](#use-agent)
 
 # Set up Jenkins using helm
 This is a quick guide for setting up Jenkins on your laptop using `minikube`, `Docker` and `Helm`, which helps you ship it to production on AWS(EKS), GCP(GKE) or Azure(AKS).
@@ -23,7 +26,7 @@ Reference ->
 3. Install `minikube`
 4. install `helm`
 
-## Deploying Jenkins master instance
+## Deploy Jenkins master instance
 Enter the workspace.
 ```zsh
 cd setup-jenkins-with-helm
@@ -170,7 +173,98 @@ Docker image. It also allows additional tools to be installed on the Jenkins con
 More details -> [Customize jenkins docker image](https://octopus.com/blog/jenkins-helm-install-guide#installing-additional-plugins)
 
 ## Configure as Code
+This part is optional.
 
 ## Back up data volumes
-
+The data used by Jenkins master is read and written by a single pod as `ReadWriteOnce` volumes, it is critical to back up the data and save it elsewhere periodically or after any change made to the Jenkins system.
+### Option 1 - save it to another directory
+1. The first command executes tar inside the pod to backup the `/var/jenkins_home` directory to the `/tmp/backup.tar.gz` archive. Note that the pod name `annz-jenkins` is derived from the Helm release name `annz-jenkins`.
+```zsh
+kubectl exec -c jenkins annz-jenkins -- tar czf /tmp/backup.tar.gz /var/jenkins_home
+```
+1. copy the backup archive from the pod to your local machine. At this point `backup.tar.gz` can be copied to a more permanent location.
+```zsh
+kubectl cp -c jenkins annz-jenkins:/tmp/backup.tar.gz ./backup.tar.gz
+```
+### Option 2 - save it in persistence volumes
+When Jenkins is running on the cloud, you can use `sc.yaml` to create `gp3` volumes for persistent data mount, and set the `persistence` config in `values-public.yaml` `true`.
+```zsh
+# create pvc
+kubectl apply -f master/sc.yaml
+# Update jenkins
+helm upgrade -f master/values-public.yaml annz-jenkins jenkins/jenkins
+```
 ## Add agents
+Jenkins agents are used to execute a series tasks isoloated from others. When you install it by the chart without specifying `agent`, it starts two pods, one as the master and the other as the agent. You can also dynamically create Jenkins agents in the cluster by specifying `agent` content in `values-minikube.yaml` file. These agents are created when new tasks are scheduled in Jenkins and are automatically cleaned up after the tasks are completed.
+
+**Note:** when you choose to create agents dynamically and re-launch Jenkins, you will see only one pod `annz-jenkins-0` running as master when no task is scheduled or running.
+
+The default settings for agents are defined under the agent property in the `values-minikube.yaml`file. The example below defines an customized agent with the Jenkins label `python`, created in pods prefixed with the name default, and with CPU and memory limits.
+```zsh
+agent:
+  podName: default
+  customJenkinsLabels: default
+  envVars:
+  - name: HOME
+    value: /home/jenkins/agent
+  - name: PATH
+    value: /usr/local/bin
+  resources:
+    limits:
+      cpu: "1"
+      memory: "2048Mi"
+  additionalAgents:
+    python:
+      podName: python
+      customJenkinsLabels: python
+      sideContainerName: python
+      image:
+        repository: python
+        tag: "3"
+      command: "/bin/sh -c"
+      args: "cat"
+      TTYEnabled: true
+  disableDefaultAgent: true
+  podTemplates:
+    python: |
+      - name: python
+        label: jenkins-python
+        serviceAccount: jenkins
+        containers:
+          - name: python
+            image: python:3
+            command: "/bin/sh -c"
+            args: "cat"
+            ttyEnabled: true
+            privileged: true
+            resourceRequestCpu: "400m"
+            resourceRequestMemory: "512Mi"
+            resourceLimitCpu: "1"
+            resourceLimitMemory: "1024Mi"
+  volumes:
+    - type: EmptyDir
+      mountPath: /var/myapp/myemptydir
+      memory: false
+```
+Go to `Manage Jenkins` -> `Clouds` -> `kubernetes` -> `Pod Templates`, edit the Pod Template.
+
+![Agent Pod Template](./images/agent-pod-template.png)
+
+## Use agent
+Define `jenkins.pipeline` for agents to execute tasks in the pipeline. The agent block should be like:
+```zsh
+pipeline {
+  agent {
+      kubernetes {
+          inheritFrom 'python'
+      }
+  }
+  stages {
+   stage('Prepare') {
+    steps {
+      echo "Fetch data"
+    }
+   }
+  }
+}
+```

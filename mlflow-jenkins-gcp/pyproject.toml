@@ -1,0 +1,17 @@
+[project]
+name = "mlflow-jenkins-gcp"
+version = "0.1.0"
+description = "A small demo of building a Flask App, training ML model, and deploying all using Jenkins and Google"
+authors = [
+    {name = "Ann-Z-West",email = "microscopy.app@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pytest (>=8.4.1,<9.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

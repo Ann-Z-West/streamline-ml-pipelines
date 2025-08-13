@@ -13,7 +13,7 @@ controller:
     enabled: true
 persistence:
     enabled: true
-    storageClass: "neosight-sc-dgraph-staging"
+    storageClass: "annz-jenkins-sc"
 agent:
   podName: default
   customJenkinsLabels: default

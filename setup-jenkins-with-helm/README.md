@@ -80,6 +80,29 @@ echo http://127.0.0.1:4444
 kubectl --namespace devops port-forward svc/annz-jenkins 4444:8080
 ```
 ## Expose Jenkins to a public IP Address on the Cloud
+If you want to run Jenkins in EKS cluster and maintain the infrastructure fully bu yourself, you might need to run code in `terraform` first.
+1. boostrap S3 bucket and DynamoDB
+```zsh
+cd terraform/bootstrap
+terraform plan
+terraform apply
+```
+2. create Vpc
+```zsh
+cd terraform/vpc
+terraform plan
+terraform apply
+``` 
+3. create everything for Jenkins
+
+Update sg and subnets in some files then run: 
+```zsh
+cd terraform/jenkins
+terraform plan
+terraform apply
+```
+1. Update values
+
 To access Jenkins through a publicly available IP address, you must override the default configuration defined in the chart via `master/values-public.yaml`.
 ```zsh
 helm upgrade --install -f master/values-public.yaml annz-jenkins jenkins/jenkins
@@ -92,15 +115,15 @@ NAME: annz-jenkins
 NOTES:
 1. Get your 'admin' user password by running:
   kubectl exec --namespace devops -it svc/annz-jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
-2. Get the Jenkins URL to visit by running these commands in the same shell:
+1. Get the Jenkins URL to visit by running these commands in the same shell:
   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
         You can watch the status of by running 'kubectl get svc --namespace devops -w annz-jenkins'
   export SERVICE_IP=$(kubectl get svc --namespace devops annz-jenkins --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
   echo http://$SERVICE_IP:8080/login
 
-3. Login with the password from step 1 and the username: admin
-4. Configure security realm and authorization strategy
-5. Use Jenkins Configuration as Code by specifying configScripts in your values.yaml file, see documentation: http:///configuration-as-code and examples: https://github.com/jenkinsci/configuration-as-code-plugin/tree/master/demos
+1. Login with the password from step 1 and the username: admin
+2. Configure security realm and authorization strategy
+3. Use Jenkins Configuration as Code by specifying configScripts in your values.yaml file, see documentation: http:///configuration-as-code and examples: https://github.com/jenkinsci/configuration-as-code-plugin/tree/master/demos
 
 For more information on running Jenkins on Kubernetes, visit:
 https://cloud.google.com/solutions/jenkins-on-container-engine

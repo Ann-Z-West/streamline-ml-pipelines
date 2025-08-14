@@ -10,7 +10,7 @@ locals {
   vms = {
     "jenkins" = {
       node_group_name        = "jenkins",
-      subnet_ids             = [], # to be updated
+      subnet_ids             = var.vpc_private_subnets, # to be updated
       ami_type               = "AL2_x86_64",
       capacity_type          = "ON_DEMAND",
       instance_types         = "t3.small",
@@ -74,7 +74,7 @@ resource "aws_eks_node_group" "nodes" {
   ]
 }
 
-resource "aws_launch_template" "node-lt-staging" {
+resource "aws_launch_template" "node-lt-devops" {
   for_each = local.vms
   name     = each.value.template_name
 

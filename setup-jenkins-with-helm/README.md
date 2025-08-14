@@ -87,12 +87,21 @@ cd terraform/bootstrap
 terraform plan
 terraform apply
 ```
-2. create everything for Jenkins
+2. create Vpc
+```zsh
+cd terraform/vpc
+terraform plan
+terraform apply
+``` 
+3. create everything for Jenkins
+
+Update sg and subnets in some files then run: 
 ```zsh
 cd terraform/jenkins
 terraform plan
 terraform apply
 ```
+1. Update values
 
 To access Jenkins through a publicly available IP address, you must override the default configuration defined in the chart via `master/values-public.yaml`.
 ```zsh

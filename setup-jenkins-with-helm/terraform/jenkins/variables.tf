@@ -19,14 +19,19 @@ variable "owner" {
   }
 }
 
+variable "vpc_id" {
+  description = "ID of the VPC"
+  default = "" # replace with VPC ID
+}
+
 variable "sg_vpc_common" {
   description = "ID of the vpc-common security group"
-  default = [] # get the group ID once the VPC and its security group is created
+  default     = [] # get the group ID once the VPC and its security group is created
 }
 
 variable "vpc_private_subnets" {
   description = "The private subnets associated with the VPC"
-  default = []
+  default     = []
 }
 
 variable "addons" {

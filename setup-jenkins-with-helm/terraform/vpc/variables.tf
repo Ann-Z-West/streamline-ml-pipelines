@@ -12,3 +12,8 @@ variable "owner" {
   description = "The email address to be used in the OWNER tag."
   type        = string
 }
+
+variable "vpc_private_subnets" {
+  description = "The private subnets associated with the VPC"
+  default     = []
+}

@@ -13,7 +13,7 @@ resource "aws_eks_cluster" "devops" {
 
   vpc_config {
     subnet_ids         = var.vpc_private_subnets # To be updated
-    security_group_ids = var.sg_vpc_common # To be updated
+    security_group_ids = var.sg_vpc_common       # To be updated
     # Kubernetes API requests within your cluster's VPC (such as node to control plane communication) use the private VPC endpoint.
     endpoint_private_access = true
     endpoint_public_access  = false // Disable public access and there's no need to provide public access cidrs.

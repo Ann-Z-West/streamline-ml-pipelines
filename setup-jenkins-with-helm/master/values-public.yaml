@@ -24,7 +24,9 @@ controller:
     enabled: true
 persistence:
     enabled: true
-    storageClass: "annz-jenkins-sc"
+    # storageClass: "annz-jenkins-sc" # use EBS
+    existingClaim: "devops-efs-sc-pvc"
+    accessMode: "ReadWriteMany"
 agent:
   podName: default
   customJenkinsLabels: default

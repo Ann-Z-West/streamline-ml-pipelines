@@ -59,3 +59,12 @@ data "aws_iam_policy_document" "devops_service_role_assume_policy" {
     }
   }
 }
+
+data "aws_iam_policy" "devops_iam_role_permission" {
+  name = "devops-iam-role-permission"
+}
+
+resource "aws_iam_role_policy_attachment" "neosight-iam-role-permission-policy-attach" {
+  role       = aws_iam_role.devops_service_role.name
+  policy_arn = data.aws_iam_policy.devops_iam_role_permission.arn
+}

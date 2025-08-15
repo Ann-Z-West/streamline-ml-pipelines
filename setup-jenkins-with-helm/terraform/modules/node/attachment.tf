@@ -29,3 +29,8 @@ resource "aws_iam_role_policy_attachment" "nodes-amazon-ebs-csi-driver-policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   role       = data.aws_iam_role.devops_node.name
 }
+
+resource "aws_iam_role_policy_attachment" "efs_driver_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
+  role       = data.aws_iam_role.devops_node.name
+}

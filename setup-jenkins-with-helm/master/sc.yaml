@@ -9,3 +9,30 @@ parameters:
 provisioner: kubernetes.io/aws-ebs
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: devops-efs-sc
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: fs-xxxxxxxxxxxxxxxxx # Replace with your EFS File System ID once it's created by terraform
+  directoryPerms: "700" # Optional: Permissions for the access point directory
+  gidRangeStart: "1000" # Optional: Start of GID range for access point
+  gidRangeEnd: "2000" # Optional: End of GID range for access point
+reclaimPolicy: Retain # Or Delete, depending on your needs
+volumeBindingMode: WaitForFirstConsumer
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: devops-efs-sc-pvc
+spec:
+  accessModes:
+    - ReadWriteMany # Specify ReadWriteMany access for the PVC.
+  storageClassName: devops-efs-sc # Referencing the EFS StorageClass.
+  resources:
+    requests:
+      storage: 5Gi # EFS ignores size limits but this field is still required.

@@ -105,6 +105,10 @@ terraform apply
 
 To access Jenkins through a publicly available IP address, you must override the default configuration defined in the chart via `master/values-public.yaml`.
 ```zsh
+# create storage class
+kubectl apply -f master/sc.yaml
+
+# install Jenkins
 helm upgrade --install -f master/values-public.yaml annz-jenkins jenkins/jenkins
 ```
 It returns something like:
